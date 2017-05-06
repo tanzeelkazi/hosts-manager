@@ -1,7 +1,13 @@
 
-# you can change these to test paths to check the output
+# Path to the hosts file
 hosts_file_path = '/etc/hosts'
-output_file_path = hosts_file_path
+
+# By default the script is configured to write to `hosts.txt`.
+# You can switch it to write to the `hosts_file_path` but you will
+# need to run the script as `sudo` to write to the system hosts file.
+output_file_path = 'hosts.txt'
+# output_file_path = hosts_file_path
+
 
 
 # List of active plugins irrespective of their
@@ -13,6 +19,8 @@ active_plugins = (
     #'apache_hosts_export',
 )
 
+# Any configurations for your plugins should go here.
+# The key should match the plugin name.
 plugin_config = {
     "apache_hosts_export": {
         "files": (

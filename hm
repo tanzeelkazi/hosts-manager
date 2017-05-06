@@ -233,9 +233,11 @@ def clean_hosts_file(clean_all=False):
 
         if match:
             if write:
-                for x in range(i - 3, i):
-                    if x >= 0:
-                        cleaned_hosts_file.pop()
+                for x in range(0, 3):
+                    if cleaned_hosts_file[-1] != '\n':
+                        break
+
+                    cleaned_hosts_file.pop()
             else:
                 skip = 3
 
