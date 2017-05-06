@@ -1,0 +1,381 @@
+#!/usr/bin/python
+
+import glob
+import importlib
+import os
+import pwd
+import re
+import sys
+
+
+# define the dotdict class to access dicts using dot notation
+class dotdict(dict):
+    """dot.notation access to dictionary attributes"""
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+
+class ERROR_CODE:
+    SUCCESS = 0
+
+    # Python uses exit-code 1 as a generic exit-code during exceptions.
+    # We want to avoid using this exit-code in our code.
+    GENERIC_EXCEPTION = 1
+
+    INVALID_INPUT = 2
+    PLUGIN_FAILED = 3
+    WRITE_FAILED = 4
+    USER_ABORTED = 5
+
+
+class Version:
+    MAJOR = 0
+    MINOR = 1
+    PATCH = 0
+    META = ''
+
+    @classmethod
+    def get(cls):
+        version = str(cls.MAJOR) + \
+                  '.' + str(cls.MINOR) + \
+                  '.' + str(cls.PATCH)
+
+        if len(cls.META) > 0:
+            version += '-' + cls.META
+
+        return version
+
+
+# constants - START
+
+VERSION = Version.get()
+
+SUPPORTED_ARGS = (
+    'build',
+    'clean',
+    'clean-all'
+)
+
+USER_ID = os.getuid()
+USER_NAME = pwd.getpwuid(USER_ID).pw_name
+
+# get the command line input arguments into a var
+INPUT_ARGS = sys.argv
+
+SCRIPT_NAME = INPUT_ARGS[0]
+SCRIPT_PATH = os.path.abspath(SCRIPT_NAME)
+SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
+
+CONFIG_FILE_NAME = 'config.py'
+
+# constants - END
+
+
+# methods - START
+
+def print_valid_args():
+    print "\nValid arguments are:\n%s" % '\n'.join(SUPPORTED_ARGS)
+
+
+def verify_supported_args():
+    unsupported_args = []
+
+    if len(INPUT_ARGS) <= 1:
+        print 'No arguments supplied'
+        print_valid_args()
+        sys.exit(ERROR_CODE.INVALID_INPUT)
+
+    for i in range(1, len(INPUT_ARGS)):
+        arg = str(INPUT_ARGS[i])
+
+        if not arg in SUPPORTED_ARGS:
+            unsupported_args.append(arg)
+
+    if len(unsupported_args) > 0:
+        print "Invalid input. The following arguments are not supported:\n%s" % '\n'.join(unsupported_args)
+        print_valid_args()
+        sys.exit(ERROR_CODE.INVALID_INPUT)
+
+
+def import_module_from_file(file_name):
+    module_name = re.sub('\.py', '', file_name)
+    module_name = re.sub('/', '.', module_name)
+
+    # print "module name: %s" % module_name
+
+    module = importlib.import_module(module_name)
+
+    return module
+
+
+def load_default_config():
+    config = dotdict({
+        "plugins": ()
+    })
+
+    return config
+
+
+def load_config():
+    if not os.path.isfile(CONFIG_FILE_NAME):
+        config = load_default_config()
+        print 'Config file doesn\'t exist - loaded defaults'
+        return config
+
+    config = import_module_from_file(CONFIG_FILE_NAME)
+    print 'Config file loaded\n'
+    return config
+
+
+def load_host_maps():
+    host_map_files = glob.glob('hosts_maps/*_conf.py')
+
+    print 'Loading host-map files:'
+
+    for host_map_file in host_map_files:
+        print "\t%s" % host_map_file
+        module = import_module_from_file(host_map_file)
+        for map_key, host_map_dict in module.host_map_config.items():
+            add_host_map(map_key, host_map_dict)
+
+    print "Done - %s file(s) loaded\n" % len(host_map_files)
+
+    return
+
+
+def load_plugins():
+    active_plugins = config.active_plugins
+
+    print 'Active-plugins:'
+
+    for plugin_name in active_plugins:
+        print "\t%s" % plugin_name
+
+    print "%s plugin(s) active\n" % len(active_plugins)
+
+    for plugin_name in active_plugins:
+        print "Running: '%s'" % plugin_name
+
+        plugin_config = config.plugin_config[plugin_name]
+
+        try:
+            plugin = import_module_from_file("plugins/%s/main.py" % plugin_name)
+            host_map_configs = plugin.main(plugin_config)
+
+            for (map_key, host_map_dict) in host_map_configs:
+                add_host_map(map_key, host_map_dict)
+
+        except Exception, err:
+            print "\t%s\nFailed\n" % err
+            sys.exit(ERROR_CODE.PLUGIN_FAILED)
+        else:
+            print "Done\n"
+
+    return
+
+
+def add_host_map(map_key, host_map_dict):
+    curr_host_map = {}
+
+    if map_key in host_map:
+        curr_host_map = host_map[map_key]
+
+    for ip, host_names in host_map_dict.items():
+        ip_map = []
+
+        if ip in curr_host_map:
+            ip_map = curr_host_map[ip]
+
+        for host in host_names:
+            if not host in ip_map:
+                ip_map.append(host)
+
+        curr_host_map[ip] = ip_map
+
+    host_map[map_key] = curr_host_map
+    return curr_host_map
+
+
+def read_hosts_file():
+    hosts_file = []
+    print "Reading hosts file at:\n\t%s" % config.hosts_file_path
+
+    with open(config.hosts_file_path, "r") as f:
+        hosts_file = f.readlines()
+
+    print 'Done\n'
+
+    return hosts_file
+
+
+def clean_hosts_file(clean_all=False):
+    print 'Cleaning hosts file'
+
+    if clean_all:
+        print '\tClean all = Y\n'
+        print '\tTHIS WILL CLEAR THE HM HOSTS-CONFIG FOR ALL USERS.'
+
+        confirm = None
+
+        try:
+            # python 2.7+
+            confirm = raw_input('\tAre you sure you want to do this? [y/N] ')
+        except Exception:
+            # python 3+
+            confirm = input('\tAre you sure you want to do this? [y/N] ')
+
+        if confirm.lower() != 'y':
+            print '\nAborted by the user!\n'
+            sys.exit(ERROR_CODE.USER_ABORTED)
+
+
+    global hosts_file
+
+    cleaned_hosts_file = []
+    write = True
+    skip = 0
+    pattern = None
+
+    if clean_all:
+        pattern = "^# tkhm -"
+    else:
+        pattern = "^# tkhm - %s -" % USER_NAME
+
+
+    for i in range(0, len(hosts_file)):
+        line = hosts_file[i]
+
+        match = re.match(pattern, line)
+
+        if match:
+            if write:
+                for x in range(i - 3, i):
+                    if x >= 0:
+                        cleaned_hosts_file.pop()
+            else:
+                skip = 3
+
+            write = not write
+            continue
+
+        if skip > 0:
+            skip -= 1
+            continue
+
+        if not write:
+            continue
+
+        cleaned_hosts_file += [ line ]
+
+    hosts_file = cleaned_hosts_file
+
+    try:
+        with open(config.output_file_path, "w") as f:
+            f.write(
+                ''.join(hosts_file)
+            )
+
+    except Exception, err:
+        print "\t%s\nFailed\n" % err
+        sys.exit(ERROR_CODE.WRITE_FAILED)
+    else:
+        print "Done\n"
+
+    return
+
+
+def write_hosts_file():
+    global hosts_file
+
+    hosts_count = 0
+
+    hosts_file += [ '\n\n\n', "# tkhm - %s - START\n" % USER_NAME ]
+
+
+    for (key, curr_host_map) in host_map.items():
+        curr_hosts_list = []
+
+        for (ip, host_names) in curr_host_map.items():
+            curr_host_count = len(host_names)
+
+            if curr_host_count == 0:
+                continue
+
+            hosts_count += curr_host_count
+
+            curr_hosts_list += [ "%s\t\t\t%s\n" % (ip, ' '.join(host_names)) ]
+
+        if len(curr_hosts_list) > 0:
+            hosts_file += [ '\n\n', "# %s - START\n" % key, '\n' ]
+            hosts_file += curr_hosts_list
+            hosts_file += [ '\n', "# %s - END\n\n" % key ]
+
+
+    hosts_file += [ '\n', "# tkhm - %s - END\n" % USER_NAME, '\n\n' ]
+
+
+    if hosts_count == 0:
+        print 'Host map is empty. Nothing to do!\nExiting'
+        sys.exit(ERROR_CODE.SUCCESS)
+
+    print "Writing hosts file:\n\t%s" % config.output_file_path
+
+    try:
+        with open(config.output_file_path, "w") as f:
+            f.write(
+                ''.join(hosts_file)
+            )
+
+    except Exception, err:
+        print "\t%s\nFailed\n" % err
+        sys.exit(ERROR_CODE.WRITE_FAILED)
+    else:
+        print "Done\n"
+
+    return
+
+# methods - END
+
+
+# regular program from this point on
+
+config = None
+host_map = {}
+hosts_file = None
+primary_command = INPUT_ARGS[1]
+
+print "TK host manager v%s\n" % VERSION
+
+
+verify_supported_args()
+
+config = load_config()
+
+load_host_maps()
+
+hosts_file = read_hosts_file()
+
+
+
+if primary_command == 'clean-all':
+    clean_hosts_file(True)
+    sys.exit(ERROR_CODE.SUCCESS)
+
+
+clean_hosts_file()
+
+if primary_command == 'clean':
+    # already done cleaning; exit
+    sys.exit(ERROR_CODE.SUCCESS)
+
+if primary_command != 'build':
+    sys.exit(ERROR_CODE.INVALID_INPUT)
+
+
+# only executing the `build` command from here on out
+
+load_plugins()
+write_hosts_file()
+
+sys.exit(ERROR_CODE.SUCCESS)

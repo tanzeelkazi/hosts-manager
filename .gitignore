@@ -1,0 +1,8 @@
+
+# usual culprits
+.DS_Store
+*.db
+.git
+.svn
+
+*.pyc
