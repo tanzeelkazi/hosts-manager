@@ -18,7 +18,7 @@ It is recommended that you check the package configuration before first-run.
 
 # Configuration
 
-The module configuration is under `./config.py`. It has comments to make it as self-explanatory as possible.
+The module configuration is under `./config.py`. It has comments to make it as self-explanatory as possible. Note that by default the build generates a `./hosts.txt` file with the intended output instead of overriding the system hosts file. This is done to give you time to check the script's output before overriding the system hosts file. See the `build` section for details on how to change this behavior and override the system hosts file.
 
 Manual host mapping configuration is under `./hosts_maps/`. The script consumes any file ending in `_conf.py` as a configuration file. See `./hosts_maps/00-default_conf.py` to start adding your hosts.
 
@@ -91,3 +91,6 @@ If you wish to uninstall the package for ALL users on the system run `clean-all`
 ```
 
 Once you have successfully replaced the clean hosts file you can delete the package directory and you are done with the uninstall.
+
+# Plugins
+TODO: Need to add documentation on how to add new plugins
