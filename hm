@@ -8,13 +8,6 @@ import re
 import sys
 
 
-# define the dotdict class to access dicts using dot notation
-class dotdict(dict):
-    """dot.notation access to dictionary attributes"""
-    __getattr__ = dict.get
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
-
 
 class ERROR_CODE:
     SUCCESS = 0
@@ -27,6 +20,7 @@ class ERROR_CODE:
     PLUGIN_FAILED = 3
     WRITE_FAILED = 4
     USER_ABORTED = 5
+    FILE_NOT_FOUND = 6
 
 
 class Version:
@@ -64,7 +58,7 @@ USER_NAME = pwd.getpwuid(USER_ID).pw_name
 INPUT_ARGS = sys.argv
 
 SCRIPT_NAME = INPUT_ARGS[0]
-SCRIPT_PATH = os.path.abspath(SCRIPT_NAME)
+SCRIPT_PATH = os.path.realpath(SCRIPT_NAME)
 SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
 
 CONFIG_FILE_NAME = 'config.py'
@@ -102,26 +96,15 @@ def import_module_from_file(file_name):
     module_name = re.sub('\.py', '', file_name)
     module_name = re.sub('/', '.', module_name)
 
-    # print "module name: %s" % module_name
-
     module = importlib.import_module(module_name)
 
     return module
 
 
-def load_default_config():
-    config = dotdict({
-        "plugins": ()
-    })
-
-    return config
-
-
 def load_config():
     if not os.path.isfile(CONFIG_FILE_NAME):
-        config = load_default_config()
-        print 'Config file doesn\'t exist - loaded defaults'
-        return config
+        print 'Config file not found - Aborting'
+        sys.exit(ERROR_CODE.FILE_NOT_FOUND)
 
     config = import_module_from_file(CONFIG_FILE_NAME)
     print 'Config file loaded\n'
@@ -344,6 +327,10 @@ config = None
 host_map = {}
 hosts_file = None
 primary_command = INPUT_ARGS[1]
+
+# need to do this in-case the executable is symlinked
+os.chdir(SCRIPT_DIR)
+
 
 print "TK host manager v%s\n" % VERSION
 
