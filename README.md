@@ -39,6 +39,14 @@ It is possible to clear out everyone's config on the machine with the `clean-all
 
 The script is designed NOT to delete entries in the hosts file except what it itself has put in. It is important, however, that you DO NOT modify the `tkhm` delimiters in any way as this WILL mess up the start and end of the cleanup operation and you will end up with a mangled `hosts` file.
 
+# Requirements
+The script is primarily designed to:
+
+- run on a unix-like environment
+- run on Python 2.7+ (Python 3+ may work but isn't tested)
+
+It assumes the location of the system `hosts` file as `/etc/hosts`. It is however NOT written specific to any OS. It may be possible to run this on Windows but it hasn't been tested.
+
 # Installation
 Simply clone (or download) the git repository to a directory of your choice.
 
