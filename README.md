@@ -5,11 +5,39 @@ This project was done with the aim of managing the hosts file with relatively si
 
 The script is also extensible via plugins to automate custom workflows. One plugin, `Apache Hosts Export`, which I needed for myself, I have made available out-of-the-box with this package. It searches for `ServerName` directives in the given list of apache config files and maps them to `127.0.0.1` (localhost) automatically.
 
-The script maintains configurations on a per-user basis. So 2-or-more users can easily use this script without blowing away each other's configuration on the same machine.
+A sample output in hosts file looks like this:
+
+```
+# tkhm - tanzeel - START
+
+
+# default - START
+
+127.0.0.1			testdomain.local
+
+# default - END
+
+
+
+# apache_hosts_export - START
+
+127.0.0.1			sampledomain myproject.local
+
+# apache_hosts_export - END
+
+
+# tkhm - tanzeel - END
+```
+
+As you can see the hosts file clearly denotes the entries entered by the script.
+
+The `tkhm - <username>` is a special delimiter for the script to hook onto when performing cleanup operations. DO NOT change or remove these delimiters as it can screw-up the cleanup operation.
+
+As you can see, the script maintains configurations on a per-user basis. So two-or-more users can easily use this script without blowing away each other's configuration on the same machine.
 
 It is possible to clear out everyone's config on the machine with the `clean-all` command but the script asks to confirm your actions before proceeding. It is assumed anyone with `sudo` rights is responsible enough to take the best actions for the system.
 
-Under NO circumstances is this script designed to delete entries in the hosts file except what it itself has put in. So existing entries in the hosts files remain untouched
+The script is designed NOT to delete entries in the hosts file except what it itself has put in. It is important, however, that you DO NOT modify the `tkhm` delimiters in any way as this WILL mess up the start and end of the cleanup operation and you will end up with a mangled `hosts` file.
 
 # Installation
 Simply clone (or download) the git repository to a directory of your choice.
@@ -19,20 +47,50 @@ You can symlink the `hm` executable to `/usr/local/bin` if you wish to run it fr
 It is recommended that you check the package configuration before first-run.
 
 # Configuration
+The module configuration is under `./config.py`. It has comments to make it as self-explanatory as possible.
 
-The module configuration is under `./config.py`. It has comments to make it as self-explanatory as possible. Note that by default the build generates a `./hosts.txt` file with the intended output instead of overriding the system's `hosts` file. This is done to give you time to check the script's output before going rambo on system files. See the `build` section for details on how to change this behavior.
+
 
 Manual host mapping configuration is under `./hosts_maps/`. The script consumes any file ending in `_conf.py` as a configuration file. See `./hosts_maps/00-default_conf.py` to start adding your hosts.
 
-# Execution Syntax
+## config.py
+The config file is a collection of variables that dictates the behavior of the script.
 
+### hosts\_file\_path
+This should be a string denoting the absolute path to your system hosts file. As is obvious the default value is `/etc/hosts`.
+
+### output\_file\_path
+This should be the location of the output file.
+
+Note that by default the build generates a `./hosts.txt` file with the intended output instead of writing back to the system's `hosts` file. This is done to give you time to check the script's output before the system file's are overridden.
+
+Once you have confidence in the execution you should uncomment the following line in the config to start writing to the system's hosts file directly.
+
+```
+output_file_path = hosts_file_path
+```
+Note: Writing to the system's hosts file needs elevated privileges. You will have to run the script with `sudo`. ALWAYS be aware of what you run as `sudo`.
+
+### active\_plugins
+This is list of the active plugins for the script.
+
+Plugins for the script are under `./plugins/<plugin_name>`. Only plugin-names listed under this config variable will be run. Make sure the plugin-name is entered correctly and the plugin exists when modifying this value.
+
+### plugin\_config
+Plugin specific configurations are entered under the relevant keys in this portion of the config file.
+
+For now it contains a default config for the `Apache Hosts Export` plugin that comes with the package. Users can update this config to suit their purpose.
+
+# Execution Syntax
 The script has 3 primary commands:
+
 - build
 - clean
 - clean-all
 
 ## build
 You would normally run the script as follows to build your hosts file:
+
 ```
 ./hm build
 ```
@@ -56,6 +114,7 @@ sudo ./hm build
 
 ## clean
 The script allows you to remove your configuration from the hosts file by running:
+
 ```
 ./hm clean
 ```
@@ -65,6 +124,7 @@ This will only clear the current-user's configuration from the hosts file.
 
 ## clean-all
 As a sysadmin (or as a power-user) if you want to clean up all the configuration added by this module from all users in the hosts file run:
+
 ```
 ./hm clean-all
 ```
@@ -76,7 +136,7 @@ You will be shown a message to confirm your actions.
     Are you sure you want to do this? [y/N]
 ```
 
-Type `y` and `<enter>` to confirm.
+Type `y` and `<enter>` to confirm. Any other value aborts the script.
 
 
 # Uninstall
