@@ -21,6 +21,7 @@ class ERROR_CODE:
     WRITE_FAILED = 4
     USER_ABORTED = 5
     FILE_NOT_FOUND = 6
+    CANNOT_PROCESS_HOSTS_FILE = 7
 
 
 class Version:
@@ -46,6 +47,9 @@ class Version:
 VERSION = Version.get()
 
 SUPPORTED_ARGS = (
+    '-v',
+    '--version',
+
     'build',
     'clean',
     'clean-all'
@@ -56,6 +60,8 @@ USER_NAME = pwd.getpwuid(USER_ID).pw_name
 
 # get the command line input arguments into a var
 INPUT_ARGS = sys.argv
+INPUT_ARGS_COUNT = len(INPUT_ARGS)
+PRIMARY_COMMAND = INPUT_ARGS[1]
 
 SCRIPT_NAME = INPUT_ARGS[0]
 SCRIPT_PATH = os.path.realpath(SCRIPT_NAME)
@@ -75,12 +81,17 @@ def print_valid_args():
 def verify_supported_args():
     unsupported_args = []
 
-    if len(INPUT_ARGS) <= 1:
+    if INPUT_ARGS_COUNT <= 1:
         print 'No arguments supplied'
         print_valid_args()
         sys.exit(ERROR_CODE.INVALID_INPUT)
 
-    for i in range(1, len(INPUT_ARGS)):
+    if INPUT_ARGS_COUNT > 2:
+        print 'Too many arguments supplied'
+        print_valid_args()
+        sys.exit(ERROR_CODE.INVALID_INPUT)
+
+    for i in range(1, INPUT_ARGS_COUNT):
         arg = str(INPUT_ARGS[i])
 
         if not arg in SUPPORTED_ARGS:
@@ -192,6 +203,15 @@ def read_hosts_file():
     return hosts_file
 
 
+def cannot_process_hosts_file():
+    # For some reason or the other the input
+    # hosts file could not be processed.
+    # Show an error to the user and abort.
+    print "\nThe input hosts file does NOT have the correct order of 'tkhm' delimiters."
+    print "Cannot process further. Aborting!\n"
+    sys.exit(ERROR_CODE.CANNOT_PROCESS_HOSTS_FILE)
+
+
 def clean_hosts_file(clean_all=False):
     print 'Cleaning hosts file'
 
@@ -217,13 +237,13 @@ def clean_hosts_file(clean_all=False):
 
     cleaned_hosts_file = []
     write = True
-    skip = 0
+    skip_blank_lines = False
     pattern = None
 
     if clean_all:
-        pattern = "^# tkhm -"
+        pattern = "^# tkhm - .*? - (START|END)$"
     else:
-        pattern = "^# tkhm - %s -" % USER_NAME
+        pattern = "^# tkhm - %s - (START|END)$" % USER_NAME
 
 
     for i in range(0, len(hosts_file)):
@@ -232,26 +252,40 @@ def clean_hosts_file(clean_all=False):
         match = re.match(pattern, line)
 
         if match:
-            if write:
-                for x in range(0, 3):
-                    if cleaned_hosts_file[-1] != '\n':
-                        break
+            if (match.group(1) == 'START' and not write) \
+                or (match.group(1) == 'END' and write):
+                # The delimiters are screwed up; abort
+                cannot_process_hosts_file()
 
+
+            if write:
+                while len(cleaned_hosts_file) > 0 and re.sub('[\s\n]+', '', cleaned_hosts_file[-1]) == '':
                     cleaned_hosts_file.pop()
+
+                # leave a courtesy new-line
+                cleaned_hosts_file.append('\n')
             else:
-                skip = 3
+                skip_blank_lines = True
 
             write = not write
             continue
 
-        if skip > 0:
-            skip -= 1
+        if skip_blank_lines and re.sub('[\s\n]+', '', line) == '':
             continue
+
+        skip_blank_lines = False
 
         if not write:
             continue
 
-        cleaned_hosts_file += [ line ]
+        cleaned_hosts_file.append(line)
+
+    if not write:
+        # This shouldn't happen.
+        # Once the END delimiter is reached the flag is switched
+        # to 'write = True' again.
+        # This means the delimiters are screwed up; abort
+        cannot_process_hosts_file()
 
     hosts_file = cleaned_hosts_file
 
@@ -275,7 +309,10 @@ def write_hosts_file():
 
     hosts_count = 0
 
-    hosts_file += [ '\n\n\n', "# tkhm - %s - START\n" % USER_NAME ]
+    hosts_file += [
+        '\n\n\n',
+        "# tkhm - %s - START\n" % USER_NAME
+    ]
 
 
     for (key, curr_host_map) in host_map.items():
@@ -292,12 +329,25 @@ def write_hosts_file():
             curr_hosts_list += [ "%s\t\t\t%s\n" % (ip, ' '.join(host_names)) ]
 
         if len(curr_hosts_list) > 0:
-            hosts_file += [ '\n\n', "# %s - START\n" % key, '\n' ]
+            hosts_file += [
+                '\n\n',
+                "# %s - START\n" % key,
+                '\n'
+            ]
+
             hosts_file += curr_hosts_list
-            hosts_file += [ '\n', "# %s - END\n\n" % key ]
+
+            hosts_file += [
+                '\n',
+                "# %s - END\n\n" % key
+            ]
 
 
-    hosts_file += [ '\n', "# tkhm - %s - END\n" % USER_NAME, '\n\n' ]
+    hosts_file += [
+        '\n',
+        "# tkhm - %s - END\n" % USER_NAME,
+        '\n\n'
+    ]
 
 
     if hosts_count == 0:
@@ -328,16 +378,22 @@ def write_hosts_file():
 config = None
 host_map = {}
 hosts_file = None
-primary_command = INPUT_ARGS[1]
+
 
 # need to do this in-case the executable is symlinked
 os.chdir(SCRIPT_DIR)
 
 
+verify_supported_args()
+
+
+if PRIMARY_COMMAND in ('-v', '--version'):
+    print VERSION
+    sys.exit(ERROR_CODE.SUCCESS)
+
+
 print "TK host manager v%s\n" % VERSION
 
-
-verify_supported_args()
 
 config = load_config()
 
@@ -347,18 +403,22 @@ hosts_file = read_hosts_file()
 
 
 
-if primary_command == 'clean-all':
+if PRIMARY_COMMAND == 'clean-all':
     clean_hosts_file(True)
     sys.exit(ERROR_CODE.SUCCESS)
 
 
 clean_hosts_file()
 
-if primary_command == 'clean':
+
+if PRIMARY_COMMAND == 'clean':
     # already done cleaning; exit
     sys.exit(ERROR_CODE.SUCCESS)
 
-if primary_command != 'build':
+if PRIMARY_COMMAND != 'build':
+    # We shouldn't be here if the `verify_supported_args` method
+    # did it's job correctly but since we are here, exit with an
+    # error code.
     sys.exit(ERROR_CODE.INVALID_INPUT)
 
 
