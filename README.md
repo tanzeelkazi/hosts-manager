@@ -8,7 +8,7 @@ The script is also extensible via plugins to automate custom workflows. One plug
 A sample output in hosts file looks like this:
 
 ```
-# tkhm - tanzeel - START
+# tkhm - username - START
 
 
 # default - START
@@ -26,7 +26,7 @@ A sample output in hosts file looks like this:
 # apache_hosts_export - END
 
 
-# tkhm - tanzeel - END
+# tkhm - username - END
 ```
 
 As you can see the hosts file clearly denotes the entries entered by the script.
@@ -37,7 +37,7 @@ As you can see, the script maintains configurations on a per-user basis. So two-
 
 It is possible to clear out everyone's config on the machine with the `clean-all` command but the script asks to confirm your actions before proceeding. It is assumed anyone with `sudo` rights is responsible enough to take the best actions for the system.
 
-The script is designed NOT to delete entries in the hosts file except what it itself has put in. It is important, however, that you DO NOT modify the `tkhm` delimiters in any way as this WILL mess up the start and end of the cleanup operation and you will end up with a mangled `hosts` file.
+The script is designed NOT to delete entries in the hosts file except what it itself has put in. It is important, however, that you DO NOT modify the `tkhm` delimiters in any way as this WILL mess up the start and end of the cleanup operation. The script aborts without writing if it is unable to determine the start and end points of its configuration.
 
 ## Requirements
 The script is primarily designed to:
