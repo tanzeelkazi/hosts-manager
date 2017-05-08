@@ -155,6 +155,9 @@ def load_plugins():
 
         try:
             plugin = import_module_from_file("plugins/%s/main.py" % plugin_name)
+
+            print "%s v%s" % (plugin.DISPLAY_NAME, plugin.VERSION)
+
             host_map_configs = plugin.main(plugin_config)
 
             for (map_key, host_map_dict) in host_map_configs:
@@ -326,7 +329,17 @@ def write_hosts_file():
 
             hosts_count += curr_host_count
 
-            curr_hosts_list += [ "%s\t\t\t%s\n" % (ip, ' '.join(host_names)) ]
+            ip_length = len(ip)
+
+            tabs = '\t'
+
+            # calculate tabs assuming ipv4 mapping
+            if ip_length < 8:
+                tabs *= 3
+            elif ip_length < 12:
+                tabs *= 2
+
+            curr_hosts_list += [ "%s%s%s\n" % (ip, tabs, ' '.join(host_names)) ]
 
         if len(curr_hosts_list) > 0:
             hosts_file += [
