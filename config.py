@@ -21,7 +21,7 @@ active_plugins = [
 plugin_config = {
     "apache_hosts_export": {
         "files": [
-            '/etc/apache2/other/sites_conf/10-projects.conf'
+            #'/etc/apache2/other/sites_conf/10-projects.conf'
         ]
     }
 }
