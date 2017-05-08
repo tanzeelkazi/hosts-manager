@@ -2,9 +2,6 @@
 import re
 
 
-PLUGIN_DISPLAY_NAME = 'Apache Hosts Export'
-
-
 class Version:
     MAJOR = 0
     MINOR = 1
@@ -23,38 +20,56 @@ class Version:
         return version
 
 
-def parse_file(file_name):
-    hosts = []
-    lines = []
+DISPLAY_NAME = 'Apache Hosts Export'
+VERSION = Version.get()
+
+
+def parse_file(file_name, hosts_map_dict):
+    default_ip = '127.0.0.1'
+    last_matched_ip = default_ip
+    lines = None
+
 
     with open(file_name, "r") as f:
         lines = f.readlines()
 
+
     for line in lines:
-        match = re.match('^[\s]+ServerName ([\S]+)[\s]*\n$', line)
+        # Start tag for VirtualHost with IP
+        match = re.match('<VirtualHost ([^*\:>]+)(?:\:[\d]+)?>', line)
 
         if match:
-            hosts.append(match.group(1))
+            last_matched_ip = match.group(1)
+            continue
 
-    return hosts
+        # End tag for VirtualHost
+        match = re.match('</VirtualHost>', line)
 
-def get_hosts_map_dict(hosts):
-    hosts_map_dict = {
-        "127.0.0.1": hosts
-    }
+        if match:
+            last_matched_ip = default_ip
+            continue
+
+
+        match = re.match('^[\s]*ServerName [\s]*([\S]+)[\s]*\n$', line)
+
+        if match:
+            host_name = match.group(1)
+
+            if not last_matched_ip in hosts_map_dict:
+                hosts_map_dict[last_matched_ip] = []
+
+            if not host_name in hosts_map_dict[last_matched_ip]:
+                hosts_map_dict[last_matched_ip].append(host_name)
 
     return hosts_map_dict
 
-def main(config):
-    print "%s v%s" % (PLUGIN_DISPLAY_NAME, Version.get())
 
-    hosts = []
+def main(config):
+    hosts_map_dict = {}
 
     for file_name in config['files']:
         print "\t%s" % file_name
-        hosts += parse_file(file_name)
-
-    hosts_map_dict = get_hosts_map_dict(hosts)
+        parse_file(file_name, hosts_map_dict)
 
     return (
         ('apache_hosts_export', hosts_map_dict),
