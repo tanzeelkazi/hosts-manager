@@ -71,6 +71,5 @@ def main(config):
         print "\t%s" % file_name
         parse_file(file_name, hosts_map_dict)
 
-    return (
-        ('apache_hosts_export', hosts_map_dict),
-    )
+    return hosts_map_dict
+

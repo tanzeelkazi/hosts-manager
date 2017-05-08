@@ -151,17 +151,19 @@ def load_plugins():
     for plugin_name in active_plugins:
         print "Running: '%s'" % plugin_name
 
-        plugin_config = config.plugin_config[plugin_name]
+        plugin_config = {}
+
+        if plugin_name in config.plugin_config:
+            plugin_config = config.plugin_config[plugin_name]
 
         try:
             plugin = import_module_from_file("plugins/%s/main.py" % plugin_name)
 
             print "%s v%s" % (plugin.DISPLAY_NAME, plugin.VERSION)
 
-            host_map_configs = plugin.main(plugin_config)
+            host_map_dict = plugin.main(plugin_config)
 
-            for (map_key, host_map_dict) in host_map_configs:
-                add_host_map(map_key, host_map_dict)
+            add_host_map(plugin_name, host_map_dict)
 
         except Exception, err:
             print "\t%s\nFailed\n" % err
