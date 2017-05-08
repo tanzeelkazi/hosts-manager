@@ -21,9 +21,12 @@ active_plugins = [
 ]
 ```
 
+It is _very important_ that you retain the folder name of the plugin as dictated by the author.
+
 The next time you run `hm build` it should start working with your new plugin.
 
-_A word of caution!_ Any time you install a new plugin make sure it behaves as expected by setting your `output_file_path` to a test file.
+### A word of caution!
+Any time you install a new plugin make sure it behaves as expected by setting your `output_file_path` to a test file.
 
 _CHECK ANY CODE RUN AS SUDO; IT COULD BE HARMFUL!!!_
 
