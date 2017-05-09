@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.1.0-dev (unreleased)
+## 1.1.0 (May 8, 2017)
 
  - Update README for the package to include an index
  - Update README for plugins to add an index
