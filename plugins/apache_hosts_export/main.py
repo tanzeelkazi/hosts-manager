@@ -1,23 +1,7 @@
 
 import re
 
-
-class Version:
-    MAJOR = 1
-    MINOR = 0
-    PATCH = 0
-    META = ''
-
-    @classmethod
-    def get(cls):
-        version = str(cls.MAJOR) + \
-                  '.' + str(cls.MINOR) + \
-                  '.' + str(cls.PATCH)
-
-        if len(cls.META) > 0:
-            version += '-' + cls.META
-
-        return version
+from __main__ import Version
 
 
 DISPLAY_NAME = 'Apache Hosts Export'
