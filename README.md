@@ -39,6 +39,25 @@ It is possible to clear out everyone's config on the machine with the `clean-all
 
 The script is designed NOT to delete entries in the hosts file except what it itself has put in. It is important, however, that you DO NOT modify the `tkhm` delimiters in any way as this WILL mess up the start and end of the cleanup operation. The script aborts without writing if it is unable to determine the start and end points of its configuration.
 
+Contents:
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+  - [Manual hosts configuration](#manual-hosts-configuration)
+  - [config.py](#configpy)
+    - [hosts\_file\_path](#hosts_file_path)
+    - [output\_file\_path](#output_file_path)
+    - [active\_plugins](#active_plugins)
+    - [plugin\_config](#plugin_config)
+- [Execution Syntax](#execution-syntax)
+  - [build](#build)
+  - [clean](#clean)
+  - [clean-all](#clean-all)
+- [Checking Versions](#checking-versions)
+- [Uninstall](#uninstall)
+- [Plugins](#plugins)
+
 ## Requirements
 The script is primarily designed to:
 
@@ -57,9 +76,8 @@ It is recommended that you check the package configuration before first-run.
 ## Configuration
 The module configuration is under `./config.py`. It has comments to make it as self-explanatory as possible.
 
-
-
-Manual host mapping configuration is under `./hosts_maps/`. The script consumes any file ending in `_conf.py` as a configuration file. See `./hosts_maps/00-default_conf.py` to start adding your hosts.
+### Manual hosts configuration
+Manual host mapping configuration is placed under `./hosts_maps/`. The script consumes any file in this directory ending in `_conf.py` as a configuration file. See `./hosts_maps/00-default_conf.py` to start adding your hosts.
 
 ### config.py
 The config file is a collection of variables that dictates the behavior of the script.
@@ -77,6 +95,7 @@ Once you have confidence in the execution you should uncomment the following lin
 ```
 output_file_path = hosts_file_path
 ```
+
 Note: Writing to the system's hosts file needs elevated privileges. You will have to run the script with `sudo`. ALWAYS be aware of what you run as `sudo`.
 
 #### active\_plugins
@@ -162,6 +181,7 @@ $ hm --version
 
 ## Uninstall
 To uninstall this package first clean-up all the configuration that it has added to the hosts file.
+
 ```
 ./hm clean
 ```
@@ -169,6 +189,7 @@ To uninstall this package first clean-up all the configuration that it has added
 This will only clean up the configuration for the current user.
 
 If you wish to uninstall the package for ALL users on the system run `clean-all` instead:
+
 ```
 ./hm clean-all
 ```

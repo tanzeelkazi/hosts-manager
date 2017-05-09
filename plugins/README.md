@@ -11,6 +11,22 @@ active_plugins = [
 ]
 ```
 
+Contents:
+
+- [Installing plugins](#installing-plugins)
+  - [A word of caution](#a-word-of-caution)
+- [Uninstalling plugins](#uninstalling-plugins)
+- [Creating Plugins](#creating-plugins)
+  - [Step 1: Start with a name](#step-1-start-with-a-name)
+  - [Step 2: Choose the plugin-key](#step-2-choose-the-plugin-key)
+  - [Step 3: Create the plugin directory and `__init__.py`](#step-3-create-the-plugin-directory-and-__init__py)
+  - [Step 4: Create the main file - `main.py`](#step-4-create-the-main-file-mainpy)
+  - [Step 5: `DISPLAY_NAME` and `VERSION`](#step-5-display_name-and-version)
+  - [Step 6: The `main` method](#step-6-the-main-method)
+  - [Step 7: Activation and configuration](#step-7-activation-and-configuration)
+  - [Step 8: Running `hm` and testing our plugin](#step-8-running-hm-and-testing-our-plugin)
+  - [Step 9: Returning a hosts-map](#step-9-returning-a-hosts-map)
+
 ## Installing plugins
 Copy the plugin folder to this directory. List the plugin folder name under `active_plugins` and configure according to the instructions that came with the plugin itself.
 
@@ -29,6 +45,31 @@ The next time you run `hm build` it should start working with your new plugin.
 Any time you install a new plugin make sure it behaves as expected by setting your `output_file_path` to a test file.
 
 _CHECK ANY CODE RUN AS SUDO; IT COULD BE HARMFUL!!!_
+
+## Uninstalling plugins
+If you want to temporarily disable a plugin from running, you can just remove it from the `active_plugins` configuration.
+
+If you have a config like this:
+
+```
+active_plugins = [
+    'apache_hosts_export',
+    'my_plugin_name'
+]
+```
+
+, and you want to disable `my_plugin_name`, you can either comment it out (prefix with `#`) or delete the line entirely.
+
+```
+active_plugins = [
+    'apache_hosts_export',
+    
+    # this plugin is now inactive
+    #'my_plugin_name'
+]
+```
+
+If you wish to remove the plugin completely, remove the name from the `active_plugins` config FIRST, and then proceed to delete the plugin folder from within the `./plugins/` directory.
 
 ## Creating Plugins
 This section will set you up with how to create plugins for _Hosts Manager_.
@@ -259,7 +300,7 @@ Save and run `hm build` again, and now look at `hosts.txt`.
 
 ```
 ...
-# tkhm - tkazi - START
+# tkhm - username - START
 
 
 # default - START
@@ -278,7 +319,7 @@ Save and run `hm build` again, and now look at `hosts.txt`.
 # my_first_plugin - END
 
 
-# tkhm - tkazi - END
+# tkhm - username - END
 ```
 
 Wheeeee!! You've got your first plugin up and running.
