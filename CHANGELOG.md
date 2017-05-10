@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.2.0-dev (unreleased)
+
+ - Sort methods by name
+
 ## 1.1.0 (May 8, 2017)
 
  - Update README for the package to include an index

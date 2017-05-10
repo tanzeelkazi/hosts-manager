@@ -171,19 +171,19 @@ Run using the `-v` or `--version` argument.
 
 ```
 $ hm -v
-0.1.0
+1.2.0
 ```
 
 ```
 $ hm --version
-0.1.0
+1.2.0
 ```
 
 ## Uninstall
 To uninstall this package first clean-up all the configuration that it has added to the hosts file.
 
 ```
-./hm clean
+$ ./hm clean
 ```
 
 This will only clean up the configuration for the current user.
@@ -191,7 +191,7 @@ This will only clean up the configuration for the current user.
 If you wish to uninstall the package for ALL users on the system run `clean-all` instead:
 
 ```
-./hm clean-all
+$ ./hm clean-all
 ```
 
 Once you have successfully replaced the clean hosts file you can delete the package directory and you are done with the uninstall.

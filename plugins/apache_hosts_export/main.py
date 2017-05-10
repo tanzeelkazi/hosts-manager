@@ -8,6 +8,16 @@ DISPLAY_NAME = 'Apache Hosts Export'
 VERSION = Version.get()
 
 
+def main(config):
+    hosts_map_dict = {}
+
+    for file_name in config['files']:
+        print "\t%s" % file_name
+        parse_file(file_name, hosts_map_dict)
+
+    return hosts_map_dict
+
+
 def parse_file(file_name, hosts_map_dict):
     default_ip = '127.0.0.1'
     last_matched_ip = default_ip
@@ -46,14 +56,3 @@ def parse_file(file_name, hosts_map_dict):
                 hosts_map_dict[last_matched_ip].append(host_name)
 
     return hosts_map_dict
-
-
-def main(config):
-    hosts_map_dict = {}
-
-    for file_name in config['files']:
-        print "\t%s" % file_name
-        parse_file(file_name, hosts_map_dict)
-
-    return hosts_map_dict
-
