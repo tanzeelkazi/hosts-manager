@@ -327,7 +327,10 @@ Save and run `hm build` again, and now look at `hosts.txt`.
 
 Wheeeee!! You've got your first plugin up and running.
 
-> Remember, the hosts-map dictionary object supports nested hosts-map configurations just like the manual-hosts-maps configurations.
+> Remember, the hosts-map dictionary object supports nested
+> hosts-map configurations just like the manual-hosts-maps
+> configurations. Feel free to return a nested hosts-map if
+> it fits your plugin workflow.
 
 ### Step 10: Starting with a clean slate
 Let's cleanup some of the configuration we did for our example before we leave you to write the meat of the plugin-code.
