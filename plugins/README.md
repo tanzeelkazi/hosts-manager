@@ -14,19 +14,21 @@ active_plugins = [
 Contents:
 
 - [Installing plugins](#installing-plugins)
-  - [A word of caution](#a-word-of-caution)
+    - [A word of caution](#a-word-of-caution)
 - [Uninstalling plugins](#uninstalling-plugins)
 - [Creating Plugins](#creating-plugins)
-  - [Step 1: Start with a name](#step-1-start-with-a-name)
-  - [Step 2: Choose the plugin-key](#step-2-choose-the-plugin-key)
-  - [Step 3: Create the plugin directory and `__init__.py`](#step-3-create-the-plugin-directory-and-__init__py)
-  - [Step 4: Create the main file - `main.py`](#step-4-create-the-main-file-mainpy)
-  - [Step 5: `DISPLAY_NAME` and `VERSION`](#step-5-display_name-and-version)
-  - [Step 6: The `main` method](#step-6-the-main-method)
-  - [Step 7: Activation and configuration](#step-7-activation-and-configuration)
-  - [Step 8: Running `hm` and testing our plugin](#step-8-running-hm-and-testing-our-plugin)
-  - [Step 9: Returning a hosts-map](#step-9-returning-a-hosts-map)
-  - [Step 10: Starting with a clean slate](#step-10-starting-with-a-clean-slate)
+    - [Step 1: Start with a name](#step-1-start-with-a-name)
+    - [Step 2: Choose the plugin-key](#step-2-choose-the-plugin-key)
+    - [Step 3: Create the plugin directory and `__init__.py`](#step-3-create-the-plugin-directory-and-__init__py)
+    - [Step 4: Create the main file - `main.py`](#step-4-create-the-main-file-mainpy)
+    - [Step 5: `DISPLAY_NAME` and `VERSION`](#step-5-display_name-and-version)
+    - [Step 6: The `main` method](#step-6-the-main-method)
+    - [Step 7: Activation and configuration](#step-7-activation-and-configuration)
+    - [Step 8: Running `hm` and testing our plugin](#step-8-running-hm-and-testing-our-plugin)
+        - [Absent and empty configurations](#absent-and-empty-configurations)
+    - [Step 9: Returning a hosts-map](#step-9-returning-a-hosts-map)
+    - [Step 10: Starting with a clean slate](#step-10-starting-with-a-clean-slate)
+
 
 ## Installing plugins
 Copy the plugin folder to this directory. List the plugin folder name under `active_plugins` and configure according to the instructions that came with the plugin itself.
@@ -46,6 +48,7 @@ The next time you run `hm build` it should start working with your new plugin.
 Any time you install a new plugin make sure it behaves as expected by setting your `output_file_path` to a test file.
 
 _CHECK ANY CODE RUN AS SUDO; IT COULD BE HARMFUL!!!_
+
 
 ## Uninstalling plugins
 If you want to temporarily disable a plugin from running, you can just remove it from the `active_plugins` configuration.
@@ -72,8 +75,10 @@ active_plugins = [
 
 If you wish to remove the plugin completely, remove the name from the `active_plugins` config FIRST, and then proceed to delete the plugin folder from within the `./plugins/` directory.
 
+
 ## Creating Plugins
 This section will set you up with how to create plugins for _Hosts Manager_.
+
 
 ### Step 1: Start with a name
 Since the script is written in Python, all plugins are loaded as a Python module.
@@ -83,13 +88,14 @@ Choose a name with the following recommendations:
 - Avoid starting the name with numbers `0-9`
 - Avoid using dots in the name `.`
 - Avoid any invalid file-name characters.
-  - Although this is fine for the _display_ name,
-    remember that your plugin name is going to be
-    used as the folder directory.
+    - Although this is fine for the _display_ name,
+      remember that your plugin name is going to be
+      used as the folder directory.
 
 These recommendations are only in place to make choosing a plugin-key easier.
 
 For our example we name our plugin `My First Plugin`.
+
 
 ### Step 2: Choose the plugin-key
 Use the plugin name you have from step 1 for this step.
@@ -124,6 +130,7 @@ $ touch __init__.py
 
 Every plugin is accessed as a python module and hence the `__init__.py` file is necessary (Python devs should already know this).
 
+
 ### Step 4: Create the main file - `main.py`
 _Hosts Manager_ is designed to hook into the `main.py` file of plugins to run code.
 
@@ -134,6 +141,7 @@ $ touch main.py
 ```
 
 At this point you should have an empty `main.py` file. We still have a few steps before we can start writing code for our plugin.
+
 
 ### Step 5: `DISPLAY_NAME` and `VERSION`
 Every plugin _must_ expose the display name and version of the plugin. Whenever the plugin is run, the script _always_ prints these out as the first line before running the rest of the plugin code.
@@ -157,6 +165,7 @@ For example, under the `Apache Host Export` plugin the version is derived from a
 VERSION = Version.get() # returns the version as a string
 ```
 
+
 ### Step 6: The `main` method
 The script calls the `main` method in your `main.py` file with a `config` argument.
 
@@ -174,6 +183,7 @@ def main(config):
 ```
 
 We are NOT ready to run our plugin yet. Before we do that, we need to activate the plugin and optionally also add a configuration under `./config.py`.
+
 
 ### Step 7: Activation and configuration
 Open `./config.py` and add the plugin to the `active_plugins` list.
@@ -222,6 +232,7 @@ def main(config):
     return {}
 ```
 
+
 ### Step 8: Running `hm` and testing our plugin
 Before running `hm` we should make sure that the output file is a test file. The plugin is NOT supposed to write to `hosts` directly. Instead it returns a `hosts-map` dictionary object. But we will get to that later.
 
@@ -250,7 +261,7 @@ Writing hosts file:
 Done
 ```
 
-Woohoo! Our plugin works!!
+Woohoo! Our plugin works!! Well, sort-of. It prints the configuration values at least.
 
 Check the `hosts.txt` file in the project (NOT plugin) directory.
 
@@ -278,6 +289,7 @@ We don't see our plugin output here yet. This is fine because to see the output 
 In the event that a configuration is absent (or empty) from `./config.py` for the plugin, which can happen either because the user forgot to configure OR the plugin doesn't require a configuration, the script passes in an empty dictionary to `config`.
 
 So the `config` in `def main(config)` will be `{}`. It is recommended that you throw an exception in your plugin code in case an important configuration directive is missing.
+
 
 ### Step 9: Returning a hosts-map
 Plugins are NOT supposed to write to the hosts file directly. Instead they are supposed to written a dictionary object with the hosts-map.
@@ -331,6 +343,7 @@ Wheeeee!! You've got your first plugin up and running.
 > hosts-map configurations just like the manual-hosts-maps
 > configurations. Feel free to return a nested hosts-map if
 > it fits your plugin workflow.
+
 
 ### Step 10: Starting with a clean slate
 Let's cleanup some of the configuration we did for our example before we leave you to write the meat of the plugin-code.

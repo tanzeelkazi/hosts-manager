@@ -48,19 +48,20 @@ Contents:
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
-  - [Manual hosts configuration](#manual-hosts-configuration)
-  - [config.py](#configpy)
-    - [hosts\_file\_path](#hosts_file_path)
-    - [output\_file\_path](#output_file_path)
-    - [active\_plugins](#active_plugins)
-    - [plugin\_config](#plugin_config)
+    - [Manual hosts configuration](#manual-hosts-configuration)
+    - [config.py](#configpy)
+        - [hosts\_file\_path](#hosts_file_path)
+        - [output\_file\_path](#output_file_path)
+        - [active\_plugins](#active_plugins)
+        - [plugin\_config](#plugin_config)
 - [Execution Syntax](#execution-syntax)
-  - [build](#build)
-  - [clean](#clean)
-  - [clean-all](#clean-all)
+    - [build](#build)
+    - [clean](#clean)
+    - [clean-all](#clean-all)
 - [Checking Versions](#checking-versions)
 - [Uninstall](#uninstall)
 - [Plugins](#plugins)
+
 
 ## Requirements
 The script is primarily designed to:
@@ -77,6 +78,7 @@ Simply clone (or download) the git repository to a directory of your choice.
 You should add the directory to your system `PATH` variable to make the script run from any directory. The script is agnostic to where it is run from (it switches to the script directory when running operations).
 
 It is recommended that you check the package configuration before first-run.
+
 
 ## Configuration
 The module configuration is under `./config.py`. It has comments to make it as self-explanatory as possible.
@@ -143,6 +145,7 @@ That's all there is to a manual-hosts configuration.
 > read on to the end of the configuration section to make
 > sure you don't miss other important configuration directives.
 
+
 ### config.py
 The config file is a collection of variables that dictates the behavior of the script.
 
@@ -171,6 +174,7 @@ Plugins for the script are under `./plugins/<plugin_name>`. Only plugin-names li
 Plugin specific configurations are entered under the relevant keys in this portion of the config file.
 
 For now it contains a default config for the `Apache Hosts Export` plugin that comes with the package. Users can update this config to suit their purpose.
+
 
 ## Execution Syntax
 The script has 3 primary commands:
@@ -204,6 +208,7 @@ You WILL have to run this script as `sudo` for it to write directly to the syste
 $ sudo hm build
 ```
 
+
 ### clean
 The script allows you to remove your configuration from the hosts file by running:
 
@@ -230,8 +235,11 @@ You will be shown a message to confirm your actions.
 
 Type `y` and `<enter>` to confirm. Any other value aborts the script.
 
+
 ## Checking Versions
-Run using the `-v` or `--version` argument.
+_Hosts Manager_ uses [semantic versioning](http://semver.org/).
+
+Run the script using the `-v` or `--version` argument.
 
 ```
 $ hm -v
