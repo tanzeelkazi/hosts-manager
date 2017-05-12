@@ -74,29 +74,6 @@ CONFIG_FILE_NAME = 'config.py'
 
 # methods - START
 
-def add_host_map(map_key, host_map_dict):
-    curr_host_map = {}
-
-    if map_key in host_map:
-        curr_host_map = host_map[map_key]
-
-    for ip, host_names in host_map_dict.items():
-        ip_map = []
-
-        if ip in curr_host_map:
-            ip_map = curr_host_map[ip]
-
-        for host in host_names:
-            if not host in ip_map:
-                ip_map.append(host)
-
-        curr_host_map[ip] = ip_map
-
-    host_map[map_key] = curr_host_map
-
-    return curr_host_map
-
-
 def cannot_process_hosts_file():
     # For some reason or the other the input
     # hosts file could not be processed.
@@ -197,6 +174,24 @@ def clean_hosts_file(clean_all=False):
     return
 
 
+def import_module_from_file(file_name):
+    module_name = re.sub('\.py', '', file_name)
+    module_name = re.sub('/', '.', module_name)
+
+    module = importlib.import_module(module_name)
+
+    return module
+
+
+def is_ipv4(str):
+    match = re.match("^(?:[1]?[\d]{1,2}|2[0-4][\d]|25[0-5])\.(?:[1]?[\d]{1,2}|2[0-4][\d]|25[0-5])\.(?:[1]?[\d]{1,2}|2[0-4][\d]|25[0-5])\.(?:[1]?[\d]{1,2}|2[0-4][\d]|25[0-5])$", str)
+
+    if match:
+        return True
+
+    return False
+
+
 def load_config():
     if not os.path.isfile(CONFIG_FILE_NAME):
         print 'Config file not found - Aborting'
@@ -207,18 +202,29 @@ def load_config():
     return config
 
 
-def load_host_maps():
-    host_map_files = glob.glob('hosts_maps/*_conf.py')
+def load_manual_hosts_map_config():
+    hosts_map_files = glob.glob('hosts_maps/*_conf.py')
 
     print 'Loading host-map files:'
 
-    for host_map_file in host_map_files:
-        print "\t%s" % host_map_file
-        module = import_module_from_file(host_map_file)
-        for map_key, host_map_dict in module.host_map_config.items():
-            add_host_map(map_key, host_map_dict)
+    for hosts_map_file in hosts_map_files:
+        print "\t%s" % hosts_map_file
 
-    print "Done - %s file(s) loaded\n" % len(host_map_files)
+        map_file_base_name = os.path.basename(hosts_map_file)
+
+        module = import_module_from_file(hosts_map_file)
+
+        hosts_map_config = {}
+
+        try:
+            hosts_map_config[map_file_base_name] = module.hosts_map_config
+        except AttributeError:
+            # < v1.2
+            hosts_map_config[map_file_base_name] = module.host_map_config
+
+        update_hosts_map('manual-hosts-maps', hosts_map_config)
+
+    print "Done - %s file(s) loaded\n" % len(hosts_map_files)
 
     return
 
@@ -246,30 +252,110 @@ def load_plugins():
 
             print "%s v%s" % (plugin.DISPLAY_NAME, plugin.VERSION)
 
-            host_map_dict = plugin.main(plugin_config)
+            hosts_map_config = plugin.main(plugin_config)
 
-            add_host_map(plugin_name, host_map_dict)
+            update_hosts_map(plugin_name, hosts_map_config)
 
         except Exception, err:
             print "\t%s\nFailed\n" % err
             sys.exit(ERROR_CODE.PLUGIN_FAILED)
+
         else:
             print "Done\n"
 
     return
 
 
-def import_module_from_file(file_name):
-    module_name = re.sub('\.py', '', file_name)
-    module_name = re.sub('/', '.', module_name)
-
-    module = importlib.import_module(module_name)
-
-    return module
-
-
 def print_valid_args():
     print "\nValid arguments are:\n%s" % '\n'.join(SUPPORTED_ARGS)
+
+
+def process_hosts_maps(hosts_map, prefix=None):
+
+    processed_hosts_map = []
+
+    ip_entries = {}
+    nested_hosts_map = []
+
+    hosts_count = 0
+
+    hosts_map_items = hosts_map.items()
+
+
+    for (key, val) in hosts_map_items:
+        if isinstance(val, dict):
+            # nested config
+            if prefix == None:
+                cur_prefix = key
+            else:
+                cur_prefix = "%s - %s" % (prefix, key)
+
+            ret_val = process_hosts_maps(val, cur_prefix)
+
+            hosts_count += ret_val['hosts_count']
+
+            if prefix == None:
+                nested_hosts_map += [ '\n' ]
+
+            nested_hosts_map += ret_val['hosts_map']
+
+            if prefix == None:
+                nested_hosts_map += [ '\n' ]
+        elif is_ipv4(key):
+            # assume hosts-list
+
+            if key in ip_entries:
+                curr_ip_entries = ip_entries[key]
+            else:
+                curr_ip_entries = set([])
+
+            curr_hosts_lists = set(val)
+
+            hosts_count += len(curr_hosts_lists)
+
+            curr_ip_entries.update(curr_hosts_lists)
+
+            ip_entries[key] = curr_ip_entries
+        else:
+            # we do NOT expect to be here
+            raise ValueError('Could not parse. Possible bad config values.', key, val)
+
+    if hosts_count > 0:
+
+        ip_entries_items = ip_entries.items()
+        ip_entries_count = len(ip_entries_items)
+
+        if prefix != None and ip_entries_count > 0:
+            processed_hosts_map += [ '# %s - START\n' % prefix, '\n' ]
+
+
+
+        for (ip, host_names) in ip_entries_items:
+            ip_length = len(ip)
+
+            tabs = '\t'
+
+            # calculate tabs assuming ipv4 mapping
+            if ip_length < 8:
+                tabs *= 3
+            elif ip_length < 12:
+                tabs *= 2
+
+            processed_hosts_map += [ "%s%s%s\n" % (ip, tabs, ' '.join(host_names)) ]
+
+        # if len(ip_entries_items) == 0 and len(processed_hosts_map) > 0:
+        #     if processed_hosts_map[-1] == '\n':
+        #         processed_hosts_map.pop()
+
+        processed_hosts_map += nested_hosts_map
+
+        if prefix != None and ip_entries_count > 0:
+            processed_hosts_map += [ '\n', '# %s - END\n' % prefix, '\n' ]
+
+    return {
+        "hosts_count": hosts_count,
+        "hosts_map": processed_hosts_map
+    }
 
 
 def verify_supported_args():
@@ -309,8 +395,26 @@ def read_hosts_file():
     return hosts_file
 
 
+def update_hosts_map(map_key, hosts_map_config):
+    global hosts_map
+
+    curr_hosts_map = {}
+
+    if map_key in hosts_map:
+        curr_hosts_map = hosts_map[map_key]
+
+    for (key, value) in hosts_map_config.items():
+        curr_hosts_map[key] = value
+
+    hosts_map[map_key] = curr_hosts_map
+
+    return
+
+
 def write_hosts_file():
     global hosts_file
+    global hosts_map
+
 
     hosts_count = 0
 
@@ -319,51 +423,16 @@ def write_hosts_file():
         "# tkhm - %s - START\n" % USER_NAME
     ]
 
+    ret_val = process_hosts_maps(hosts_map)
 
-    for (key, curr_host_map) in host_map.items():
-        curr_hosts_list = []
-
-        for (ip, host_names) in curr_host_map.items():
-            curr_host_count = len(host_names)
-
-            if curr_host_count == 0:
-                continue
-
-            hosts_count += curr_host_count
-
-            ip_length = len(ip)
-
-            tabs = '\t'
-
-            # calculate tabs assuming ipv4 mapping
-            if ip_length < 8:
-                tabs *= 3
-            elif ip_length < 12:
-                tabs *= 2
-
-            curr_hosts_list += [ "%s%s%s\n" % (ip, tabs, ' '.join(host_names)) ]
-
-        if len(curr_hosts_list) > 0:
-            hosts_file += [
-                '\n\n',
-                "# %s - START\n" % key,
-                '\n'
-            ]
-
-            hosts_file += curr_hosts_list
-
-            hosts_file += [
-                '\n',
-                "# %s - END\n\n" % key
-            ]
-
+    hosts_count = ret_val['hosts_count']
+    hosts_file += ret_val['hosts_map']
 
     hosts_file += [
         '\n',
         "# tkhm - %s - END\n" % USER_NAME,
         '\n\n'
     ]
-
 
     if hosts_count == 0:
         print 'Host map is empty. Nothing to do!\nExiting'
@@ -385,13 +454,14 @@ def write_hosts_file():
 
     return
 
+
 # methods - END
 
 
 # regular program from this point on
 
 config = None
-host_map = {}
+hosts_map = {}
 hosts_file = None
 
 
@@ -412,10 +482,7 @@ print "TK host manager v%s\n" % VERSION
 
 config = load_config()
 
-load_host_maps()
-
 hosts_file = read_hosts_file()
-
 
 
 if PRIMARY_COMMAND == 'clean-all':
@@ -439,7 +506,10 @@ if PRIMARY_COMMAND != 'build':
 
 # only executing the `build` command from here on out
 
+load_manual_hosts_map_config()
 load_plugins()
 write_hosts_file()
 
 sys.exit(ERROR_CODE.SUCCESS)
+
+

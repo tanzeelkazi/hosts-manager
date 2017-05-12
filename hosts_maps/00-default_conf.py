@@ -1,5 +1,5 @@
 
-host_map_config = {
+hosts_map_config = {
     # key
     'default': {
         # ip
