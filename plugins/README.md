@@ -26,6 +26,7 @@ Contents:
   - [Step 7: Activation and configuration](#step-7-activation-and-configuration)
   - [Step 8: Running `hm` and testing our plugin](#step-8-running-hm-and-testing-our-plugin)
   - [Step 9: Returning a hosts-map](#step-9-returning-a-hosts-map)
+  - [Step 10: Starting with a clean slate](#step-10-starting-with-a-clean-slate)
 
 ## Installing plugins
 Copy the plugin folder to this directory. List the plugin folder name under `active_plugins` and configure according to the instructions that came with the plugin itself.
@@ -259,11 +260,13 @@ Check the `hosts.txt` file in the project (NOT plugin) directory.
 # tkhm - username - START
 
 
-# default - START
+
+# manual-hosts-maps - 00-default_conf.py - default - START
 
 127.0.0.1		testdomain.local
 
-# default - END
+# manual-hosts-maps - 00-default_conf.py - default - END
+
 
 
 # tkhm - username - END
@@ -302,21 +305,21 @@ Save and run `hm build` again, and now look at `hosts.txt`.
 ...
 # tkhm - username - START
 
-
-# default - START
-
-127.0.0.1		testdomain.local
-
-# default - END
-
-
-
 # my_first_plugin - START
 
 192.168.0.99	testdomain3 www.testdomain.com
-127.0.0.1		testdomain1 testdomain2.local
+127.0.0.1		testdomain2.local testdomain1
 
 # my_first_plugin - END
+
+
+
+# manual-hosts-maps - 00-default_conf.py - default - START
+
+127.0.0.1		testdomain.local
+
+# manual-hosts-maps - 00-default_conf.py - default - END
+
 
 
 # tkhm - username - END
@@ -324,6 +327,44 @@ Save and run `hm build` again, and now look at `hosts.txt`.
 
 Wheeeee!! You've got your first plugin up and running.
 
-Now use your python chops to automate your process under the main method. Whatever is possible under Python goes.
+> Remember, the hosts-map dictionary object supports nested hosts-map configurations just like the manual-hosts-maps configurations.
+
+### Step 10: Starting with a clean slate
+Let's cleanup some of the configuration we did for our example before we leave you to write the meat of the plugin-code.
+
+Within `./config.py` look for this:
+
+```
+"my_first_plugin": {
+        "foo": 'abc',
+        "bar": [],
+        "baz": {}
+    }
+```
+
+, and, update it to a blank configuration.
+
+```
+"my_first_plugin": {}
+```
+
+> Remember, it is NOT necessary to have a configuration object
+> for your plugin. In the event the configuration for your plugin
+> is NOT found, the script sends in a blank dictionary object `{}`
+> instead.
+
+Update the `main` method in `main.py`:
+
+```
+def main(config):
+    # plugin code goes here
+
+    # return hosts-map dictionary object
+    return {}
+```
+
+If you haven't yet named your plugin don't forget to rename all the properties and file-folder names.
+
+You are done!! Now use your python chops to automate your process under the main method. Whatever is possible under Python goes.
 
 If you need to see an example working plugin in action you can always go see the code under `Apache Hosts Export`.
