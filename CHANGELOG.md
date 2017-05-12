@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.2.0-dev (unreleased)
+## 1.2.0
 
  - Add support for nested hosts configurations
  - Add more verbose hosts-file comments in the output
