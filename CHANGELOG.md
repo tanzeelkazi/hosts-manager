@@ -2,7 +2,12 @@
 
 ## 1.2.0-dev (unreleased)
 
+ - Add support for nested hosts configurations
+ - Add more verbose hosts-file comments in the output
  - Sort methods by name
+ - Remove recommendation to symlink to `/usr/local/bin` since
+   the script is to support configurations from multiple users.
+ - Updated all the readme files to reflect the new nested-config option.
 
 ## 1.1.0 (May 8, 2017)
 
