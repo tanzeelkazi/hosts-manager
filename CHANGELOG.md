@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.2.1 (unreleased)
+## 1.2.1 (May 12, 2017)
 
  - Add note about semantic versioning in readme.
  - Update indentation of all list items to have consistent

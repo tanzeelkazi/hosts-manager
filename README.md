@@ -243,12 +243,12 @@ Run the script using the `-v` or `--version` argument.
 
 ```
 $ hm -v
-1.2.0
+1.2.1
 ```
 
 ```
 $ hm --version
-1.2.0
+1.2.1
 ```
 
 ## Uninstall
