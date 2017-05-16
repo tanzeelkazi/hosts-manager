@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <g>
+        <rect x="0" y="0" width="512" height="512" />
+    </g>
+    <g font-family="Courier New">
+        <g>
+            <text x="30" y="100" font-size="70px" fill="#ccc" stroke="none">/etc/hosts</text>
+        </g>
+        <g font-size="28px" fill="#ccc" stroke="none">
+            <text x="30" y="170">127.0.0.1</text>
+            <text x="270" y="170">example.com</text>
+            <text x="30" y="210">192.168.0.28</text>
+            <text x="270" y="210">abc xyz.com</text>
+        </g>
+        <g font-size="200px" fill="#fff" stroke="#fff" stroke-width="2">
+            <text x="30" y="420">$</text>
+            <text x="170" y="420">hm</text>
+        </g>
+    </g>
+</svg>

@@ -2,9 +2,10 @@
 
 ## 1.3.0
 
- - Update readme to specify semver spec version (2.0.0)
+ - Update readme to specify semver spec version (2.0.0).
  - Update ahe (Apache Hosts Export) to read `ServerAlias`
    directive.
+ - Add SVG logo for `hm`.
 
 
 ## 1.2.1 (May 12, 2017)
