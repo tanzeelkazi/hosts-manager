@@ -4,9 +4,7 @@ import re
 from __main__ import Version
 
 
-DISPLAY_NAME = 'Apache Hosts Export'
-VERSION = Version.get()
-
+# methods - END
 
 def main(config):
     hosts_map_dict = {}
@@ -71,3 +69,13 @@ def parse_file(file_name, hosts_map_dict):
                     hosts_map_dict[last_matched_ip].append(host_name)
 
     return hosts_map_dict
+
+# methods - END
+
+
+# constants - START
+
+DISPLAY_NAME = 'Apache Hosts Export'
+VERSION = Version.get()
+
+# constants - END
