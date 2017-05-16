@@ -393,7 +393,8 @@ def write_hosts_file():
 
     hosts_file += [
         '\n\n\n',
-        "# tkhm - %s - START\n" % USER_NAME
+        "# tkhm - %s - START\n" % USER_NAME,
+        "# tkhm - v%s\n" % VERSION
     ]
 
     ret_val = process_hosts_maps(hosts_map)

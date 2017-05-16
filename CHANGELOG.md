@@ -8,6 +8,8 @@
  - Add SVG logo for `hm`.
  - The script now takes the original user's username even
    when run under the `sudo` context.
+ - The version of the script used to generate the output is
+   now printed in the hosts file.
 
 
 ## 1.2.1 (May 12, 2017)
