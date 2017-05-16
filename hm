@@ -3,11 +3,12 @@
 import glob
 import importlib
 import os
-import pwd
 import re
 import sys
 
 
+
+# classes - START
 
 class ERROR_CODE:
     SUCCESS = 0
@@ -41,35 +42,7 @@ class Version:
 
         return version
 
-
-# constants - START
-
-VERSION = Version.get()
-
-SUPPORTED_ARGS = (
-    '-v',
-    '--version',
-
-    'build',
-    'clean',
-    'clean-all'
-)
-
-USER_ID = os.getuid()
-USER_NAME = pwd.getpwuid(USER_ID).pw_name
-
-# get the command line input arguments into a var
-INPUT_ARGS = sys.argv
-INPUT_ARGS_COUNT = len(INPUT_ARGS)
-PRIMARY_COMMAND = INPUT_ARGS[1]
-
-SCRIPT_NAME = INPUT_ARGS[0]
-SCRIPT_PATH = os.path.realpath(SCRIPT_NAME)
-SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
-
-CONFIG_FILE_NAME = 'config.py'
-
-# constants - END
+# classes - END
 
 
 # methods - START
@@ -456,6 +429,38 @@ def write_hosts_file():
 
 
 # methods - END
+
+
+# constants - START
+
+VERSION = Version.get()
+
+SUPPORTED_ARGS = (
+    '-v',
+    '--version',
+
+    'build',
+    'clean',
+    'clean-all'
+)
+
+# Get the current username irrespective
+# of whether the script is being run in
+# a `sudo` context
+USER_NAME = os.getlogin()
+
+# get the command line input arguments into a var
+INPUT_ARGS = sys.argv
+INPUT_ARGS_COUNT = len(INPUT_ARGS)
+PRIMARY_COMMAND = INPUT_ARGS[1] if INPUT_ARGS_COUNT > 1 else ''
+
+SCRIPT_NAME = INPUT_ARGS[0]
+SCRIPT_PATH = os.path.realpath(SCRIPT_NAME)
+SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
+
+CONFIG_FILE_NAME = 'config.py'
+
+# constants - END
 
 
 # regular program from this point on
