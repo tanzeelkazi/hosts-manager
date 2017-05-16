@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.3.0
+
+ - Update readme to specify semver spec version (2.0.0)
+ - Update ahe (Apache Hosts Export) to read `ServerAlias`
+   directive.
+
+
 ## 1.2.1 (May 12, 2017)
 
  - Add note about semantic versioning in readme.

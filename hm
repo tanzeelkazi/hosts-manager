@@ -26,9 +26,9 @@ class ERROR_CODE:
 
 class Version:
     MAJOR = 1
-    MINOR = 2
-    PATCH = 1
-    META = ''
+    MINOR = 3
+    PATCH = 0
+    META = 'dev'
 
     @classmethod
     def get(cls):

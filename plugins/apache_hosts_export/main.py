@@ -55,4 +55,19 @@ def parse_file(file_name, hosts_map_dict):
             if not host_name in hosts_map_dict[last_matched_ip]:
                 hosts_map_dict[last_matched_ip].append(host_name)
 
+            continue
+
+
+        match = re.match('^[\s]*ServerAlias ([\s\S]+)\n$', line)
+
+        if match:
+            host_names = match.group(1).split()
+
+            if not last_matched_ip in hosts_map_dict:
+                hosts_map_dict[last_matched_ip] = []
+
+            for host_name in host_names:
+                if not host_name in hosts_map_dict[last_matched_ip]:
+                    hosts_map_dict[last_matched_ip].append(host_name)
+
     return hosts_map_dict

@@ -237,7 +237,7 @@ Type `y` and `<enter>` to confirm. Any other value aborts the script.
 
 
 ## Checking Versions
-_Hosts Manager_ uses [semantic versioning](http://semver.org/).
+_Hosts Manager_ uses [semantic versioning 2.0.0](http://semver.org/spec/v2.0.0.html).
 
 Run the script using the `-v` or `--version` argument.
 
