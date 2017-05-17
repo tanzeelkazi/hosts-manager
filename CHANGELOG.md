@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.3.0 (unreleased)
+## 1.3.0 (May 16, 2017)
 
  - Update readme to specify semver spec version (2.0.0).
  - Update ahe (Apache Hosts Export) to read `ServerAlias`

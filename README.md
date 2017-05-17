@@ -9,6 +9,7 @@ A sample output in hosts file looks like this:
 
 ```
 # tkhm - username - START
+# tkhm - v1.3.0
 
 # apache_hosts_export - START
 
@@ -243,12 +244,12 @@ Run the script using the `-v` or `--version` argument.
 
 ```
 $ hm -v
-1.2.1
+1.3.0
 ```
 
 ```
 $ hm --version
-1.2.1
+1.3.0
 ```
 
 ## Uninstall
