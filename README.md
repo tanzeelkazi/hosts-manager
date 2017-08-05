@@ -1,4 +1,7 @@
 # Hosts Manager
+
+_Version 1.4.0_
+
 This module is aimed at simplifying management of the system `hosts` file for developers like myself. Although it is simple to edit `hosts` files on machines to test our projects, managing them however, across machines or even over time is a drudging task.
 
 This project was done with the aim of managing the hosts file with relatively simple configs and without the need to install a lot of dependencies.
@@ -9,7 +12,7 @@ A sample output in hosts file looks like this:
 
 ```
 # tkhm - username - START
-# tkhm - v1.3.0
+# tkhm - vX.Y.Z
 
 # apache_hosts_export - START
 
@@ -68,9 +71,9 @@ Contents:
 The script is primarily designed to:
 
 - run on a unix-like environment
-- run on Python 2.7+ (Python 3+ may work but isn't tested)
+- run on Python 2.7+ (Python 3+ does NOT work)
 
-It assumes the location of the system `hosts` file as `/etc/hosts`. It is however NOT written specific to any OS. It may be possible to run this on Windows but it hasn't been tested.
+It assumes the location of the system `hosts` file as `/etc/hosts`. Although it is NOT written specific to any OS, it may NOT be possible to run this on Windows.
 
 
 ## Installation
@@ -244,12 +247,12 @@ Run the script using the `-v` or `--version` argument.
 
 ```
 $ hm -v
-1.3.0
+X.Y.Z
 ```
 
 ```
 $ hm --version
-1.3.0
+X.Y.Z
 ```
 
 ## Uninstall

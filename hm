@@ -27,9 +27,9 @@ class ERROR_CODE:
 
 class Version:
     MAJOR = 1
-    MINOR = 3
+    MINOR = 4
     PATCH = 0
-    META = ''
+    META = 'dev'
 
     @classmethod
     def get(cls):
@@ -235,6 +235,58 @@ def load_plugins():
 
         else:
             print "Done\n"
+
+    return
+
+
+def main():
+    global config
+    global hosts_file
+
+    # need to do this in-case the executable is symlinked
+    os.chdir(SCRIPT_DIR)
+
+    verify_supported_args()
+
+
+    if PRIMARY_COMMAND in ('-v', '--version'):
+        print VERSION
+        sys.exit(ERROR_CODE.SUCCESS)
+
+
+    print "TK host manager v%s\n" % VERSION
+
+
+    config = load_config()
+
+    hosts_file = read_hosts_file()
+
+
+    if PRIMARY_COMMAND == 'clean-all':
+        clean_hosts_file(True)
+        sys.exit(ERROR_CODE.SUCCESS)
+
+
+    clean_hosts_file()
+
+
+    if PRIMARY_COMMAND == 'clean':
+        # already done cleaning; exit
+        sys.exit(ERROR_CODE.SUCCESS)
+
+
+    if PRIMARY_COMMAND != 'build':
+        # We shouldn't be here if the `verify_supported_args` method
+        # did it's job correctly but since we are here, exit with an
+        # error code.
+        sys.exit(ERROR_CODE.INVALID_INPUT)
+
+
+    # only executing the `build` command from here on out
+
+    load_manual_hosts_map_config()
+    load_plugins()
+    write_hosts_file()
 
     return
 
@@ -448,7 +500,8 @@ SUPPORTED_ARGS = (
 # Get the current username irrespective
 # of whether the script is being run in
 # a `sudo` context
-USER_NAME = os.getlogin()
+USER_NAME = os.getenv('SUDO_USER')
+USER_NAME = USER_NAME if USER_NAME else os.getenv('LOGNAME')
 
 # get the command line input arguments into a var
 INPUT_ARGS = sys.argv
@@ -471,51 +524,9 @@ hosts_map = {}
 hosts_file = None
 
 
-# need to do this in-case the executable is symlinked
-os.chdir(SCRIPT_DIR)
+if __name__ == '__main__':
+    main()
 
-
-verify_supported_args()
-
-
-if PRIMARY_COMMAND in ('-v', '--version'):
-    print VERSION
-    sys.exit(ERROR_CODE.SUCCESS)
-
-
-print "TK host manager v%s\n" % VERSION
-
-
-config = load_config()
-
-hosts_file = read_hosts_file()
-
-
-if PRIMARY_COMMAND == 'clean-all':
-    clean_hosts_file(True)
-    sys.exit(ERROR_CODE.SUCCESS)
-
-
-clean_hosts_file()
-
-
-if PRIMARY_COMMAND == 'clean':
-    # already done cleaning; exit
-    sys.exit(ERROR_CODE.SUCCESS)
-
-if PRIMARY_COMMAND != 'build':
-    # We shouldn't be here if the `verify_supported_args` method
-    # did it's job correctly but since we are here, exit with an
-    # error code.
-    sys.exit(ERROR_CODE.INVALID_INPUT)
-
-
-# only executing the `build` command from here on out
-
-load_manual_hosts_map_config()
-load_plugins()
-write_hosts_file()
 
 sys.exit(ERROR_CODE.SUCCESS)
-
 

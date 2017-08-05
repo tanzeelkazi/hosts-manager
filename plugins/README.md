@@ -240,7 +240,7 @@ Run `hm build` and you should see the following output
 
 ```
 $ hm build
-TK host manager v0.1.0
+TK host manager vX.Y.Z
 
 Config file loaded
 
@@ -269,7 +269,7 @@ Check the `hosts.txt` file in the project (NOT plugin) directory.
 ...
 
 # tkhm - username - START
-# tkhm - v1.3.0
+# tkhm - vX.Y.Z
 
 
 # manual-hosts-maps - 00-default_conf.py - default - START
@@ -316,7 +316,7 @@ Save and run `hm build` again, and now look at `hosts.txt`.
 ```
 ...
 # tkhm - username - START
-# tkhm - v1.3.0
+# tkhm - vX.Y.Z
 
 # my_first_plugin - START
 
